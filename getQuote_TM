@@ -1,0 +1,85 @@
+var startTime = HB.stckf();
+
+var common = require("common", "hbutils");
+var debugging = require("debugging", "hbutils");
+
+common.hbRunProto();
+//debugging.checkDebugControl();
+//debuggin.global = true;
+
+var hb = new HB.Session();
+var response = {
+		status : {
+			timestamp: 0,
+			tranCount: 0,
+			platform: '',
+			elapsedTime: 0,
+			success: false,
+			errors: []
+		},
+		quotes: []
+}
+ var outputFormat = null;
+
+function initialize() {
+	hb.run('hb_tranid=trad', 'T002');
+	
+	let company = HB.request.http.getValue("company").split(",");
+	outputFormat = HB.request.http.getValue("format");
+
+	return company;
+}
+
+function terminate()  {
+	hb.run('hb_aid=pf12&hb_delete_session=1');
+	response.status.elapsedTime = HB.stckf() - startTime;
+	response.status.tranCount = hb.tranCount;
+	if(outputFormat == "json") {
+		common.headers.json();
+		writeln(common.toJSONString(response));
+	} else if (outputFormat == "xml") {
+		common.headers.xml();
+		writeln(common.jsToXML(response, "stockquote"));
+	}
+}
+
+function getQuote(company) {
+
+	hb.set("option", company);
+	hb.run('hb_aid=enter', 'T003');
+	hb.run('opt2=1&hb_aid=enter', 'T004');
+	
+	var quote = {
+			company: hb.getFieldValue("COMP41"),
+			sharePrice: hb.getFieldValue("SHRNOW"),
+			sharesHeld: hb.getFieldValue("HELD"),
+			totalValue: hb.getFieldValue("VALUE")
+	}
+	
+	response.quotes.push(quote);
+		
+	hb.run("hb_aid=pf3", 'T003');
+	hb.run("hb_aid=pf3", 'T002');
+
+}
+function main() {
+	try {		
+		let companyNumbers = initialize();
+		response.status.timestamp = Date.now();
+		response.status.platform = "MVS/380 CICS"
+		debugging.writeln('input was:', companyNumbers.join(','));
+		
+		for (let i = 0; i < companyNumbers.length; i++) {
+			getQuote(companyNumbers[i]);
+		}
+		response.status.success = true;
+		
+	} catch (e) {
+		response.status.errors.push(e);
+	} finally {
+		terminate();
+	}
+}
+
+main();
+

@@ -1,0 +1,172 @@
+var startTime = HB.stckf();   //Assembler instruction, in microseconds
+
+var common = require('common', 'hbutils');
+var debugging = require('debugging', 'hbutils');
+
+common.hbRunProto();
+debugging.global = false;
+debugging.checkDebugControl();
+
+debugging.writeln("------------------------------------------------");
+debugging.writeln("         Debug session of Giovanni");
+debugging.writeln("------------------------------------------------");
+
+
+var debugFlag = false;
+var hb = new HB.Session();
+var cics = new Cics();
+var user = cics.userid;
+var paddedUserid = common.padLeft(cics.userid, 8, ' ');
+var taskId = cics.taskId;
+var paddedtaskId = common.padLeft(cics.taskId, 6, ' ');
+var dataType = "json";
+
+
+var response = {
+		status : {
+			platform: '',
+			tranCount: 0,
+			timestamp: '',
+			elapsedTime: 0,
+			success: false,
+			errors: []
+		},
+		quotes: []
+}
+
+function initialize() {
+}
+
+function terminate () {
+	  hb.run('hb_aid=pf12&hb_delete_session=1');	
+	  writeDebug('Transaction count: ',hb.tranCount);
+	  
+	  response.status.elapsedTime = HB.stckf() - startTime;
+	  response.status.tranCount = hb.tranCount;
+	  
+	  if (dataType=="xml"){
+		  common.headers.xml();
+		  writeln(common.jsToXML(response,"StockQuote"));		  
+	  }
+	  else{
+		  common.headers.json();
+		  writeln(common.toJSONString(response));
+		  
+	  }
+
+}
+
+function main() {
+	
+	var banner;
+
+	writeDebug("Started main");
+
+//	banner = hb.getFieldValue("banner");
+//	writeDebug("banner ",banner);
+	
+	response.status.timestamp = Date.now();
+	response.status.platform = cics.sysid;
+	
+
+
+	hb.run('hb_tranid=TRAD','T002');
+	whereAmI();
+		
+	let companyNumber = HB.request.http.getValue('company');
+	dataType = HB.request.http.getValue('dataType');
+	//let companyNumber = 1;
+	let stock = processStock(companyNumber);
+
+	//	displayStock(stock);
+	
+	/*
+	for (let i=1;i<=4;i++){
+		let stock = processStock(i);
+		
+		displayStock(stock);
+		
+	}
+	*/
+	
+	response.quotes.push(stock);
+	response.status.success = true;
+	
+
+}
+
+function displayStock(stock){
+	writeln("Stock   ",stock.company);
+	writeln(" held   ",stock.held);
+	writeln(" value  ",stock.value);
+	writeln();
+}
+
+function processStock(i){
+	writeDebug("Started processStock");
+	
+	hb.set("OPTION",i);
+	hb.run('hb_aid=ENTER','T003');
+	whereAmI();
+	
+	hb.set("opt2",1);
+	hb.run('hb_aid=ENTER','T004');
+	whereAmI();
+
+	var stock = {
+			company : null,
+			held	: 0,
+			value 	: 0
+	};
+	
+	stock.company = hb.getFieldValue("COMP41");
+	stock.held    = parseInt(hb.getFieldValue("HELD"));
+	stock.value   = parseInt(hb.getFieldValue("VALUE"));	
+	
+	writeDebug("Extracting Stock details");
+	writeDebug("   company '",stock.company,"'");
+	writeDebug("   held    '",stock.held   ,"'");
+	writeDebug("   value   '",stock.value  ,"'");
+
+	hb.run('hb_aid=pf3','T003');
+	whereAmI();
+	
+	hb.run('hb_aid=pf3','T002');
+	whereAmI();
+	
+	return stock;
+
+}
+
+function whereAmI(){
+	writeDebug("You are at:\t","MAPSET \t",hb.mapset,"MAP \t",hb.map);	
+//	header = hb.getText(3, 21, 245);
+//	writeDebug("header ",header);	
+}
+
+function writeDebug(){
+	if (debugFlag === true){
+
+		let time = Date.now();
+//		debugging.write(": ",new Date().toLocaleTimeString(), ' ',paddedUserid,' ',taskId,' ');
+		write(": ",new Date().toLocaleTimeString(), ' ',paddedUserid,' ',taskId,' ');
+
+		
+		for (let i=0; i<arguments.length;i++){
+//			debugging.write(arguments[i],"");
+			write(arguments[i],"");
+		}
+//		debugging.writeln();
+		writeln();
+	}		
+}
+
+initialize()
+try{
+	main();
+}
+catch (e){
+	response.status.errors.push(e);
+}
+
+terminate();
