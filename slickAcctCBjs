@@ -1,0 +1,93 @@
+(function () {
+	var common = require('common', 'hbutils');
+	var debugging = require('debugging', 'hbutils');
+
+	exports.account = function (options) {
+		var self = this;
+		this.options = typeof options === 'object'? options : {};
+		this._length = 240;
+		this._cobolNames = false;
+
+		this._fields =  {
+			'account' : 0,
+			'dummy' : 1,
+			'accountNum' : 2,
+			'dummy_1' : 3,
+			'name' : 4,
+			'last' : 5,
+			'first' : 6,
+			'mid' : 7,
+			'dummy_2' : 8,
+			'address' : 9,
+			'street' : 10,
+			'city' : 11,
+			'state' : 12,
+			'zip' : 13,
+			'dummy_3' : 14,
+			'phone' : 15,
+			};
+		
+		this._offset = {
+			type 		: 0,
+			signed 		: 1,
+			precision	: 2,
+			scale		: 3,
+			length 		: 4,
+			position 	: 8,
+			occurs 		: 12,
+			occParent	: 16,
+			parent		: 20
+		};
+		
+		this._type = ["group", "character", "binary", "packed", "zoned", "float", "double", "num-edit-dz", "num-edit-d9", "num-edit-z", "num-edit-9"];
+		
+		this._attributeFieldLength = 24;
+		 
+		this._attributes = new StringBuffer('' + 
+			'\x00\x00\x00\x00\x00\x00\x00\xf0\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // account [0] | t=GROUP signed= pre= scale= len=240 pos=0 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // dummy [1] | t=CHAR signed= pre= scale= len=1 pos=0 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x06\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // accountNum [2] | t=CHAR signed= pre= scale= len=6 pos=1 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x07\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // dummy_1 [3] | t=CHAR signed= pre= scale= len=2 pos=7 occ=   
+			'\x00\x00\x00\x00\x00\x00\x00\x23\x00\x00\x00\x09\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // name [4] | t=GROUP signed= pre= scale= len=35 pos=9 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x11\x00\x00\x00\x09\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x04' +   // last [5] | t=CHAR signed= pre= scale= len=17 pos=9 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x11\x00\x00\x00\x1a\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x04' +   // first [6] | t=CHAR signed= pre= scale= len=17 pos=26 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x2b\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x04' +   // mid [7] | t=CHAR signed= pre= scale= len=1 pos=43 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x2d\x00\x00\x00\x2c\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // dummy_2 [8] | t=CHAR signed= pre= scale= len=45 pos=44 occ=   
+			'\x00\x00\x00\x00\x00\x00\x00\x73\x00\x00\x00\x59\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // address [9] | t=GROUP signed= pre= scale= len=115 pos=89 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x50\x00\x00\x00\x59\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09' +   // street [10] | t=CHAR signed= pre= scale= len=80 pos=89 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x19\x00\x00\x00\xa9\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09' +   // city [11] | t=CHAR signed= pre= scale= len=25 pos=169 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x05\x00\x00\x00\xc2\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09' +   // state [12] | t=CHAR signed= pre= scale= len=5 pos=194 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x05\x00\x00\x00\xc7\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09' +   // zip [13] | t=CHAR signed= pre= scale= len=5 pos=199 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x0d\x00\x00\x00\xcc\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // dummy_3 [14] | t=CHAR signed= pre= scale= len=13 pos=204 occ=   
+			'\x01\x00\x00\x00\x00\x00\x00\x17\x00\x00\x00\xd9\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +   // phone [15] | t=CHAR signed= pre= scale= len=23 pos=217 occ=   
+			'');
+		
+
+		/*
+		 * Add methods to this object
+		 */
+		try {
+			/*
+			 * If no object containing the copybook methods is passed in then use the default methods in common
+			 */
+			if (typeof this.options.methods !== 'object') this.options.methods = common.copybookMethods;
+			for (var method in this.options.methods) {
+				this[method] = this.options.methods[method];
+			}
+		} catch (e) {
+			/*
+			 * If copybookMethods does not exist in common ignor and continue, assume the user will add 
+			 * methods later.
+			 */
+		}
+		
+		/*
+		 * If the option initialize is true then call the initialize method, it assumes the 
+		 * initialize method was added above.
+		 */
+		if (this.options.initialize === true) {
+			this.initialize();
+		}
+				
+	}
+}) ();
