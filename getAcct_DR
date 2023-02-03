@@ -68,7 +68,6 @@ function main() {
             }
             hb.run('hb_aid=pf8');
         }
-
         response.status.accountsReturned = response.accountList.length;
 		response.status.success = true;
     } catch (e) {
@@ -76,12 +75,10 @@ function main() {
     } finally {
         terminate();
     }
-
 }
 
 function doit() {
     for ( let j=1; j < 4; j++ ) {
-
         response.accountList.push({
                accountNumber : hb.getFieldValue('M2A'+j+'L1').substr(0,6).trim(),
                customer : {
@@ -101,7 +98,6 @@ function doit() {
             })  
     }
 } 
-
 try {
     main();
 } catch (e) {
