@@ -19,23 +19,25 @@ var response = {
       success: false,
       errors: []
    },
-   accountList: [{
-      accountNumber : 0,
-      customer : {
-         name : {
-            lastName :  null,
-            middleName : null,
-            firstName : null
-         },
-         address : {
-            street : null,
-            city   : null,
-            state  : null,
-            zip    : 0
-         },
-         phoneNumber : null
-      }
-   }]
+   accountList: [
+//     {
+//       accountNumber : 0,
+//       customer : {
+//          name : {
+//             lastName :  null,
+//             middleName : null,
+//             firstName : null
+//          },
+//          address : {
+//             street : null,
+//             city   : null,
+//             state  : null,
+//             zip    : 0
+//          },
+//          phoneNumber : null
+//       }
+//    }
+]
 }
 
 function initialize() {
