@@ -1,14 +1,11 @@
-//Exercise Diego
-
 //HostBridge Code
 var common = require('common', 'hbutils');
 var debugging = require('debugging', 'hbutils');
 
-//var startTime = HB.stckf();
+var startTime = HB.stckf();
 
 common.hbRunProto();
 debugging.checkDebugControl();
-
 //debugging.global = true;
 
 var hb = new HB.Session();
@@ -42,35 +39,38 @@ var response = {
 }
 
 function initialize() {
-    hb.run('hb_tranid=slk0', 'SLICKM0');
-//  writeln(hb.map);
-    hb.run('hb_aid=pf2', 'SLICKM2');
+    hb.run('hb_tranid=slk0');
+    //  writeln(hb.map);
+    hb.run('hb_aid=pf2');
     
 }
 
-function terminate() {
+function terminate () {
     hb.set('hb_delete_session', '1');
     hb.run('hb_aid=pf12');
+    
+    response.status.elapsedTime = HB.stckf() - startTime;
+    response.status.tranCount = hb.tranCount;
 
-//response.status.elapsedTime = HB.stckf() - startTime;
-//response.status.tranCount = hb.tranCount;
+    common.headers.json();
+	writeln(common.toJSONString(response));
 }
 
 function main() {
     try {
     	initialize();
-	    
-    	writeln(hb.getFieldValue('M2A1L1'));
-	    writeln(hb.getFieldValue('M2A1L2'));
-	    writeln(hb.getFieldValue('M2A1L3'));
-	    writeln(hb.getFieldValue('M2A2L1'));
-	    writeln(hb.getFieldValue('M2A2L2'));
-	    writeln(hb.getFieldValue('M2A2L3'));
+        for (let i = 1; i < 100 ; i++) {
 
-	    writleln(common.chukString('M2A1L1',3));
+            doit();
+            
+            if (hb.getFieldValue('M2OF') == hb.getFieldValue('M2TO')) {
+                break;
+            }
+            hb.run('hb_aid=pf8');
+        }
 
-
-
+        response.status.accountsReturned = response.accountList.length;
+		response.status.success = true;
     } catch (e) {
         response.status.errors.push(e);
     } finally {
@@ -78,6 +78,29 @@ function main() {
     }
 
 }
+
+function doit() {
+    for ( let j=1; j < 4; j++ ) {
+
+        response.accountList.push({
+               accountNumber : hb.getFieldValue('M2A'+j+'L1').substr(0,6).trim(),
+               customer : {
+                  name : {
+                     lastName :  hb.getFieldValue('M2A'+j+'L1').substr(8,17).trim(),
+                     middleName : hb.getFieldValue('M2A'+j+'L1').substr(42,1).trim(),
+                     firstName : hb.getFieldValue('M2A'+j+'L1').substr(25,17).trim(),
+                  },
+                  address : {
+                     street : hb.getFieldValue('M2A'+j+'L2').substr(0,80).trim(),
+                     city   : hb.getFieldValue('M2A'+j+'L3').substr(0,22).trim(),
+                     state  : hb.getFieldValue('M2A'+j+'L3').substr(33,2).trim(),
+                     zip    : hb.getFieldValue('M2A'+j+'L3').substr(38,5).trim(),
+                  },
+                  phoneNumber : hb.getFieldValue('M2A'+j+'L3').substr(56,14).trim()
+               }
+            })  
+    }
+} 
 
 try {
     main();

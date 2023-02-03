@@ -1,0 +1,12 @@
+001001  FISHBOURNE       ROSEMARY         K
+        3 CARNATION ST
+        BAYCREST                 NY   11743 0000        (631) 397-4411
+001002  JAMIESON         NICOLE           M
+        60 MIMOSA ST
+        GORDON HEIGHTS           NY   11763 0000        (631) 219-1022
+001003  KRIEGER          CHRISTOPHER      I
+        20 HERCULES DR
+        WAINSCOTT                NY   11975 0000        (631) 626-2265
+001004  SOLARA           KEVIN            B
+        135 JASMINE DR
+        SMITHTOWN                NY   11745 0000        (631) 449-0283
