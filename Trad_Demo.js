@@ -1,13 +1,11 @@
-var startTime = HB.stckf();
 
 var hb = new HB.Session();
 var common = require('common', 'hbutils');
 var debugging = require('debugging', 'hbutils');
-
 common.hbRunProto();
-
 debugging.checkDebugControl();
 debugging.global = true;
+var startTime = HB.stckf();
 
 var response = {
 		quotes: [],
@@ -17,19 +15,21 @@ var response = {
 			success: false,
 			errors: []
 		}
-}
+	}
+
 
 function initialize() {
-	
+
 	var input = {
-		companies: HB.request.http.getValue('companies').split(','),
-		type: HB.request.http.getValue('type') !== 'xml' ? 'JSON' : 'XML'
-	} 
-	
+			companies: HB.request.http.getValue('companies').split(','),
+			type: HB.request.http.getValue('type') !== 'xml' ? 'JSON' : 'XML'
+		}
+
 	hb.set('hb_entry', 'trad');
-	hb.run('HB_AID=ENTER', 'T002');
-	
-	return(input);
+    hb.set('hb_timeout', '300');
+    hb.run('HB_AID=ENTER', 'T002');
+
+    return(input);
 }
 
 function termination() {
@@ -38,26 +38,28 @@ function termination() {
 	response.status.tranCount = hb.tranCount;
 	common.headers.json();
 	writeln(common.toJSONString(response));
-} 
+
+}
 
 function getQuote(companyNumber) {
-	hb.set('OPTION', companyNumber);
-	hb.run('HB_AID=ENTER', 'T003');
+    hb.set('OPTION', companyNumber);
+    hb.run('HB_AID=ENTER', 'T003');
 
-	hb.set('OPT2', '1');
-	hb.run('HB_AID=ENTER', 'T004');
-	
-	var quote = {
-		companyName: hb.getFieldValue('COMP41'),
-		shares: hb.getFieldValue('HELD'),
-		totalValue: hb.getFieldValue('VALUE'),
-		sharePrice: hb.getFieldValue('SHRNOW')
-	}
+    hb.set('OPT2', '1');
+    hb.run('HB_AID=ENTER', 'T004');
 
-	hb.run('HB_AID=PF3', 'T003');
-	hb.run('HB_AID=PF3', 'T002');	
-	
-	return(quote);
+    var quote = {
+    		companyName: hb.getFieldValue('COMP41'),
+    		shares: hb.getFieldValue('HELD'),
+    		totalValue: hb.getFieldValue('VALUE'),
+    		sharePrice: hb.getFieldValue('SHRNOW')
+    	}
+    
+    hb.run('HB_AID=PF3', 'T003');
+
+    hb.run('HB_AID=PF3', 'T002');
+    
+    return(quote);
 }
 
 function main() {
@@ -72,6 +74,10 @@ function main() {
 	} finally {
 		termination();
 	}
+	
 }
 
+
 main();
+
+

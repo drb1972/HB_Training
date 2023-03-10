@@ -1,0 +1,36 @@
+// Generated with curl -o sample.json http://mstrsvw.lvn.broadcom.net:8000/hbscript/new_file?companies=1,2,3,4 
+
+{
+   "quotes": [
+      {
+         "companyName": "Casey Import Export",
+         "shares": "4350",
+         "totalValue": "000343650.00",
+         "sharePrice": "00079.00"
+      },
+      {
+         "companyName": "Glass and Luget Plc",
+         "shares": "0000",
+         "totalValue": "000000000.00",
+         "sharePrice": "00019.00"
+      },
+      {
+         "companyName": "Headworth Electrical",
+         "shares": "0000",
+         "totalValue": "000000000.00",
+         "sharePrice": "00124.00"
+      },
+      {
+         "companyName": "IBM",
+         "shares": "0251",
+         "totalValue": "000040913.00",
+         "sharePrice": "00163.00"
+      }
+   ],
+   "status": {
+      "elapsedTime": 211280,
+      "tranCount": 18,
+      "success": true,
+      "errors": []
+   }
+}
