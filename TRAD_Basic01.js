@@ -21,9 +21,8 @@ hb.run('HB_AID=ENTER', 'T004');
 
 writeln('company = ', hb.getFieldValue('COMP41'));
 writeln('value   = ', hb.getFieldValue('SHRNOW'));
-
-hb.getFieldValue('HELD');
-hb.getFieldValue('VALUE');
+writeln('help    =' , hb.getFieldValue('HELD'));
+writeln('value   = ', hb.getFieldValue('VALUE'));
 hb.run('HB_AID=PF3', 'T003');
 
 hb.run('HB_AID=PF3', 'T002');
