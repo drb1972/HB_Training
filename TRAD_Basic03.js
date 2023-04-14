@@ -1,10 +1,7 @@
-// TRAD Basic02
-// Incluye opciones de debug, utilities (p.e. nombre de pantalla)
-// Código agrupado en funciones
-// Creamos un objeto para almacenar los valores
-// En main almacenamos el objeto
-// Copy into Eclipse as an TRAD_Basic02.hbx file
-// http://mstrsvw.lvn.broadcom.net:8000/hbscript/TRAD_Basic02
+// TRAD Basic03
+// En initialize acepto las variables de compañías y type (xml o json)
+// Copy into Eclipse as an TRAD_Basic03.hbx file
+// http://mstrsvw.lvn.broadcom.net:8000/hbscript/TRAD_Basic03
 
 var hb = new HB.Session();
 var common = require('common', 'hbutils');
@@ -18,8 +15,15 @@ var response = {
 	}
 
 function initialize() {
+   var input = {
+      companies: HB.request.http.getValue('companies').split(','),
+      type: HB.request.http.getValue('type') 
+   }
+   
 	hb.set('hb_entry', 'trad');
 	hb.run('hb_aid=ENTER', 'T002');
+
+   return(input);
 }
 
 function getQuote(companyNumber) {
@@ -45,14 +49,30 @@ function getQuote(companyNumber) {
 
 function termination() {
 	hb.run('hb_aid=PF12&hb_delete_session=1');
+
+   // var type = HB.request.http.getValue('type');
+
+   // if (type=="xml"){
+   //    common.headers.xml();
+   //    writeln(common.jsToXML(response,"StockQuote"));		  
+   // }
+   // else{
+   //    common.headers.json();
+   //    writeln(common.toJSONString(response));
+      
+   // }
+
    common.headers.json();
-	writeln(common.toJSONString(response));
+   writeln(common.toJSONString(response));
 } 
 
 function main() {
-	initialize();
-	response.quotes.push(getQuote('1'));
-	termination();
+
+   var input = initialize();
+   for (var i=0; i < input.companies.length; i++) {
+      response.quotes.push(getQuote(input.companies[i]));
+   }
+   termination();
 }
 
 main();
